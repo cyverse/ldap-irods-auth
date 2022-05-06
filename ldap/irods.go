@@ -35,11 +35,10 @@ func NewIRODSAuth(config *commons.Config) (*IRODSAuth, error) {
 }
 
 // Auth authenticate a user via password
-func (auth *IRODSAuth) Auth(username string, password string) (bool, error) {
-	usernamehash := makeHash(fmt.Sprintf("%s%s", hashSeed, username))
-	authhash := makeHash(fmt.Sprintf("%s%s%s", hashSeed, username, password))
+func (auth *IRODSAuth) Auth(dn string, password string) (bool, error) {
+	authhash := makeHash(fmt.Sprintf("%s%s%s", hashSeed, dn, password))
 
-	entry, _ := auth.authCache.Get(usernamehash)
+	entry, _ := auth.authCache.Get(dn)
 	if cachedAuthHash, ok := entry.(string); ok {
 		// has auth cache
 		if cachedAuthHash == authhash {
@@ -47,7 +46,12 @@ func (auth *IRODSAuth) Auth(username string, password string) (bool, error) {
 		}
 	}
 
-	irodsAccount, err := irodsclient_types.CreateIRODSAccount(auth.config.IRODSHost, auth.config.IRODSPort, username, auth.config.IRODSZone, irodsclient_types.AuthSchemeNative, password, "")
+	if !ValidateDN(auth.config.LDAPBaseDN, dn) {
+		return false, fmt.Errorf("DN not matched")
+	}
+
+	irodsUsername := GetUsernameFromDN(dn)
+	irodsAccount, err := irodsclient_types.CreateIRODSAccount(auth.config.IRODSHost, auth.config.IRODSPort, irodsUsername, auth.config.IRODSZone, irodsclient_types.AuthSchemeNative, password, "")
 	if err != nil {
 		return false, err
 	}
@@ -61,8 +65,17 @@ func (auth *IRODSAuth) Auth(username string, password string) (bool, error) {
 
 	defer irodsConn.Disconnect()
 
-	auth.authCache.Add(usernamehash, authhash, 0)
+	auth.authCache.Add(dn, authhash, 0)
 	return true, nil
+}
+
+// GetDNs returns DNs
+func (auth *IRODSAuth) GetDNs() []string {
+	users := []string{}
+	for k := range auth.authCache.Items() {
+		users = append(users, k)
+	}
+	return users
 }
 
 // makeHash returns hash string from plain text

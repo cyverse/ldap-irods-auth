@@ -12,6 +12,7 @@ const (
 	ServicePortDefault      int    = 1389
 	IRODSPortDefault        int    = 1247
 	AuthCacheTimeoutDefault int    = 60 * 5 // 5min
+	LDAPBaseDNDefault       string = "dc=iplantcollaborative,dc=org"
 	LogFilePathDefault      string = "/tmp/ldap-irods-auth.log"
 )
 
@@ -26,6 +27,8 @@ type Config struct {
 
 	AuthCacheTimeout int `envconfig:"LDAP_IRODS_AUTH_CACHE_TIMEOUT" yaml:"auth_cache_timeout"`
 
+	LDAPBaseDN string `envconfig:"LDAP_IRODS_AUTH_LDAP_BASE_DN" yaml:"ldap_base_dn"`
+
 	LogPath string `envconfig:"LDAP_IRODS_AUTH_LOG_PATH" yaml:"log_path,omitempty"`
 
 	Foreground   bool `yaml:"foreground,omitempty"`
@@ -39,6 +42,7 @@ func NewDefaultConfig() *Config {
 		ServicePort:      ServicePortDefault,
 		IRODSPort:        IRODSPortDefault,
 		AuthCacheTimeout: AuthCacheTimeoutDefault,
+		LDAPBaseDN:       LDAPBaseDNDefault,
 		LogPath:          LogFilePathDefault,
 
 		Foreground:   false,
@@ -53,6 +57,7 @@ func NewConfigFromENV() (*Config, error) {
 		ServicePort:      ServicePortDefault,
 		IRODSPort:        IRODSPortDefault,
 		AuthCacheTimeout: AuthCacheTimeoutDefault,
+		LDAPBaseDN:       LDAPBaseDNDefault,
 		LogPath:          LogFilePathDefault,
 
 		Foreground:   false,
@@ -74,6 +79,7 @@ func NewConfigFromYAML(yamlBytes []byte) (*Config, error) {
 		ServicePort:      ServicePortDefault,
 		IRODSPort:        IRODSPortDefault,
 		AuthCacheTimeout: AuthCacheTimeoutDefault,
+		LDAPBaseDN:       LDAPBaseDNDefault,
 		LogPath:          LogFilePathDefault,
 
 		Foreground:   false,
