@@ -30,7 +30,7 @@ release: build
 install_centos:
 	cp bin/ldap-irods-auth /usr/bin
 	cp install/ldap-irods-auth.service /usr/lib/systemd/system/
-	id -u ldapirodsauth &> /dev/null || adduser -r -d /dev/null -s /sbin/nologin ldapirodsauth
+	id -u ldapirodsauth || adduser -r -d /dev/null -s /sbin/nologin ldapirodsauth
 	mkdir -p /etc/ldap-irods-auth
 	cp install/ldap-irods-auth.conf /etc/ldap-irods-auth
 	chown ldapirodsauth /etc/ldap-irods-auth/ldap-irods-auth.conf
@@ -40,7 +40,7 @@ install_centos:
 install_ubuntu:
 	cp bin/ldap-irods-auth /usr/bin
 	cp install/ldap-irods-auth.service /etc/systemd/system/
-	id -u ldapirodsauth &> /dev/null || adduser --system --home /dev/null --shell /sbin/nologin ldapirodsauth
+	id -u ldapirodsauth || adduser --system --home /dev/null --shell /sbin/nologin ldapirodsauth
 	mkdir -p /etc/ldap-irods-auth
 	cp install/ldap-irods-auth.conf /etc/ldap-irods-auth
 	chown ldapirodsauth /etc/ldap-irods-auth/ldap-irods-auth.conf
