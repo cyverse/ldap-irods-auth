@@ -1,0 +1,16 @@
+[Unit]
+Description=LDAP-iRODS-Auth, a fake ldap server that authenticates users using iRODS accounts
+After=network-online.target nss-lookup.target
+
+[Service]
+Type=forking
+KillMode=process
+
+ExecStart=/usr/bin/ldap-irods-auth
+ExecReload=
+
+EnvironmentFile=/etc/ldap-irods-auth/ldap-irods-auth.conf
+User=ldapirodsauth
+
+[Install]
+WantedBy=multi-user.target
