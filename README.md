@@ -1,6 +1,17 @@
 # ldap-irods-auth
 An LDAP server for iRODS user authentication
 
+# run
+
+```bash
+./ldap-irods-auth -config ./config.yaml
+```
+
+# test
+```bash
+ldapsearch -x -h localhost -p 1389 -D "uid=iychoi,ou=People,dc=iplantcollaborative,dc=org" -b "dc=iplantcollaborative,dc=org" -W uid=iychoi
+```
+
 ## License
 
 Copyright (c) 2010-2021, The Arizona Board of Regents on behalf of The University of Arizona
