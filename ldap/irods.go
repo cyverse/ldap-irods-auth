@@ -7,6 +7,7 @@ import (
 	"time"
 
 	irodsclient_conn "github.com/cyverse/go-irodsclient/irods/connection"
+	irodsclient_fs "github.com/cyverse/go-irodsclient/irods/fs"
 	irodsclient_types "github.com/cyverse/go-irodsclient/irods/types"
 	"github.com/cyverse/ldap-irods-auth/commons"
 	gocache "github.com/patrickmn/go-cache"
@@ -61,6 +62,26 @@ func (auth *IRODSAuth) Auth(dn string, password string) (bool, error) {
 	if err != nil {
 		// auth fail
 		return false, err
+	}
+
+	// check groups
+	if len(auth.config.IRODSUserGroup) != 0 {
+		groupNames, err := irodsclient_fs.ListUserGroupNames(irodsConn, irodsUsername)
+		if err != nil {
+			return false, err
+		}
+
+		belong := false
+		for _, groupName := range groupNames {
+			if auth.config.IRODSUserGroup == groupName {
+				belong = true
+				break
+			}
+		}
+
+		if !belong {
+			return false, fmt.Errorf("user '%s' is not in a group '%s'", irodsUsername, auth.config.IRODSUserGroup)
+		}
 	}
 
 	defer irodsConn.Disconnect()

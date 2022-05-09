@@ -11,6 +11,7 @@ const (
 	ServiceHostDefault      string = ""
 	ServicePortDefault      int    = 1389
 	IRODSPortDefault        int    = 1247
+	IRODSUserGroupDefault   string = ""
 	AuthCacheTimeoutDefault int    = 60 * 5 // 5min
 	LDAPBaseDNDefault       string = "dc=iplantcollaborative,dc=org"
 	LogFilePathDefault      string = "/tmp/ldap-irods-auth.log"
@@ -21,9 +22,10 @@ type Config struct {
 	ServiceHost string `envconfig:"LDAP_IRODS_AUTH_SERVICE_HOST" yaml:"service_host"`
 	ServicePort int    `envconfig:"LDAP_IRODS_AUTH_SERVICE_PORT" yaml:"service_port"`
 
-	IRODSHost string `envconfig:"LDAP_IRODS_AUTH_IRODS_HOST" yaml:"irods_host"`
-	IRODSPort int    `envconfig:"LDAP_IRODS_AUTH_IRODS_PORT" yaml:"irods_port"`
-	IRODSZone string `envconfig:"LDAP_IRODS_AUTH_IRODS_ZONE" yaml:"irods_zone"`
+	IRODSHost      string `envconfig:"LDAP_IRODS_AUTH_IRODS_HOST" yaml:"irods_host"`
+	IRODSPort      int    `envconfig:"LDAP_IRODS_AUTH_IRODS_PORT" yaml:"irods_port"`
+	IRODSZone      string `envconfig:"LDAP_IRODS_AUTH_IRODS_ZONE" yaml:"irods_zone"`
+	IRODSUserGroup string `envconfig:"LDAP_IRODS_AUTH_IRODS_USER_GROUP" yaml:"irods_user_group"`
 
 	AuthCacheTimeout int `envconfig:"LDAP_IRODS_AUTH_CACHE_TIMEOUT" yaml:"auth_cache_timeout"`
 
@@ -41,6 +43,7 @@ func NewDefaultConfig() *Config {
 		ServiceHost:      ServiceHostDefault,
 		ServicePort:      ServicePortDefault,
 		IRODSPort:        IRODSPortDefault,
+		IRODSUserGroup:   IRODSUserGroupDefault,
 		AuthCacheTimeout: AuthCacheTimeoutDefault,
 		LDAPBaseDN:       LDAPBaseDNDefault,
 		LogPath:          LogFilePathDefault,
@@ -56,6 +59,7 @@ func NewConfigFromENV() (*Config, error) {
 		ServiceHost:      ServiceHostDefault,
 		ServicePort:      ServicePortDefault,
 		IRODSPort:        IRODSPortDefault,
+		IRODSUserGroup:   IRODSUserGroupDefault,
 		AuthCacheTimeout: AuthCacheTimeoutDefault,
 		LDAPBaseDN:       LDAPBaseDNDefault,
 		LogPath:          LogFilePathDefault,
@@ -78,6 +82,7 @@ func NewConfigFromYAML(yamlBytes []byte) (*Config, error) {
 		ServiceHost:      ServiceHostDefault,
 		ServicePort:      ServicePortDefault,
 		IRODSPort:        IRODSPortDefault,
+		IRODSUserGroup:   IRODSUserGroupDefault,
 		AuthCacheTimeout: AuthCacheTimeoutDefault,
 		LDAPBaseDN:       LDAPBaseDNDefault,
 		LogPath:          LogFilePathDefault,
