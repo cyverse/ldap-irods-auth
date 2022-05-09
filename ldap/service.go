@@ -5,10 +5,9 @@ import (
 	"sync"
 
 	"github.com/cyverse/ldap-irods-auth/commons"
+	ldap_message "github.com/lor00x/goldap/message"
 	log "github.com/sirupsen/logrus"
 	"github.com/vjeantet/ldapserver"
-
-	ldap_message "github.com/lor00x/goldap/message"
 )
 
 // LDAPService is a service object
@@ -115,10 +114,8 @@ func (svc *LDAPService) handleBind(w ldapserver.ResponseWriter, m *ldapserver.Me
 		dn := string(r.Name())
 		if dn == "" {
 			// anonymous access
-			log.Printf("Bind failed for Anonymous user")
-			failRes := ldapserver.NewBindResponse(ldapserver.LDAPResultInvalidCredentials)
-			failRes.SetDiagnosticMessage("invalid user")
-			w.Write(failRes)
+			log.Printf("Anonymous user bind")
+			w.Write(ldapserver.NewBindResponse(ldapserver.LDAPResultSuccess))
 			return
 		}
 
@@ -126,6 +123,7 @@ func (svc *LDAPService) handleBind(w ldapserver.ResponseWriter, m *ldapserver.Me
 
 		authSuccess, _ := svc.irodsAuth.Auth(dn, irodsPassword)
 		if authSuccess {
+			log.Printf("Bind User=%s", dn)
 			w.Write(ldapserver.NewBindResponse(ldapserver.LDAPResultSuccess))
 			return
 		}
@@ -159,16 +157,69 @@ func (svc *LDAPService) handleSearch(w ldapserver.ResponseWriter, m *ldapserver.
 	default:
 	}
 
+	// to quick search
+	attributes := map[string]string{}
+	for _, att := range r.Attributes() {
+		attributes[string(att)] = string(att)
+	}
+
+	// included all id
+	usersAdded := map[string]string{}
+
 	dns := svc.irodsAuth.GetDNs()
 	for _, dn := range dns {
 		username := GetUsernameFromDN(dn)
 		filter := r.FilterString()
 		if CheckDNFilter(filter, dn) {
+			log.Printf("Returning search result - %s", dn)
+
 			e := ldapserver.NewSearchResultEntry(dn)
-			e.AddAttribute("mail", ldap_message.AttributeValue(username+"@cyverse.org"))
-			e.AddAttribute("cn", ldap_message.AttributeValue(username))
+			if len(attributes) == 0 {
+				// display all
+				e.AddAttribute("mail", ldap_message.AttributeValue(username+"@cyverse.org"))
+				e.AddAttribute("cn", ldap_message.AttributeValue(username))
+			} else {
+				if _, ok := attributes["uid"]; ok {
+					e.AddAttribute("uid", ldap_message.AttributeValue(username))
+				}
+
+				if _, ok := attributes["cn"]; ok {
+					e.AddAttribute("cn", ldap_message.AttributeValue(username))
+				}
+			}
+
 			w.Write(e)
+
+			usersAdded[username] = dn
 		}
+	}
+
+	// include asked id
+	askedUser := ExtractFilterValue(r.FilterString(), "uid")
+	log.Printf("asked user := %s", askedUser)
+	if _, ok := usersAdded[askedUser]; !ok {
+		// not added
+		// make a new dn
+		log.Printf("Adding an asked user %s to search result", askedUser)
+		dn := fmt.Sprintf("uid=%s,ou=People,%s", askedUser, r.BaseObject())
+
+		e := ldapserver.NewSearchResultEntry(dn)
+		if len(attributes) == 0 {
+			// display all
+			e.AddAttribute("mail", ldap_message.AttributeValue(askedUser+"@cyverse.org"))
+			e.AddAttribute("cn", ldap_message.AttributeValue(askedUser))
+		} else {
+			if _, ok := attributes["uid"]; ok {
+				e.AddAttribute("uid", ldap_message.AttributeValue(askedUser))
+			}
+
+			if _, ok := attributes["cn"]; ok {
+				e.AddAttribute("cn", ldap_message.AttributeValue(askedUser))
+			}
+		}
+		w.Write(e)
+
+		usersAdded[askedUser] = dn
 	}
 
 	res := ldapserver.NewSearchResultDoneResponse(ldapserver.LDAPResultSuccess)

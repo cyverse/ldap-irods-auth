@@ -8,6 +8,15 @@ An LDAP server for iRODS user authentication
 ```
 
 # test
+
+Anonymous bind and search
+```bash
+ldapsearch -x -h localhost -p 1389 uid=iychoi
+
+ldapsearch -x -h localhost -p 1389 -b "dc=iplantcollaborative,dc=org" "(&(objectclass=*)(uid=iychoi))" uid
+```
+
+Bind and search
 ```bash
 ldapsearch -x -h localhost -p 1389 -D "uid=iychoi,ou=People,dc=iplantcollaborative,dc=org" -b "dc=iplantcollaborative,dc=org" -W uid=iychoi
 ```

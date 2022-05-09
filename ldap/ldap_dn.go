@@ -1,6 +1,8 @@
 package ldap
 
-import "strings"
+import (
+	"strings"
+)
 
 // GetUsernameFromDN returns username from dn
 func GetUsernameFromDN(dn string) string {
@@ -23,16 +25,54 @@ func ParseDN(dn string) map[string]string {
 	return fieldMap
 }
 
-// CheckDNFilter checks if dn satisfies filter
-func CheckDNFilter(filter string, dn string) bool {
-	filterString := strings.Trim(filter, "()")
-
-	if filterString == "objectclass=*" {
-		// default match
-		return true
+func ParseDNFilter(filter string) (string, []string) {
+	if filter[0] == '(' {
+		filter = filter[1 : len(filter)-1]
 	}
 
-	return ValidateDN(filterString, dn)
+	// TODO: need to handle other operations
+	filters := []string{}
+	if filter[0] == '&' || filter[0] == '|' {
+		// and
+		filterStrings := strings.Split(filter[1:], ")(")
+		for _, filterString := range filterStrings {
+			filterString = strings.Trim(filterString, "()")
+			filters = append(filters, filterString)
+		}
+
+		return "&", filters
+	}
+
+	filters = append(filters, filter)
+	return "", filters
+}
+
+// ExtractFilterValue extracts filter value
+func ExtractFilterValue(filter string, key string) string {
+	_, filterStrings := ParseDNFilter(filter)
+	for _, filterString := range filterStrings {
+		kv := strings.Split(filterString, "=")
+		if len(kv) == 2 && strings.TrimSpace(kv[0]) == key {
+			return strings.TrimSpace(kv[1])
+		}
+	}
+	return ""
+}
+
+// CheckDNFilter checks if dn satisfies filter
+func CheckDNFilter(filter string, dn string) bool {
+	_, filterStrings := ParseDNFilter(filter)
+	for _, filterString := range filterStrings {
+		if filterString == "objectclass=*" {
+			// ignore
+		} else {
+			// key=val
+			if !ValidateDN(filterString, dn) {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 // ValidateDN validates if dn is based on baseDN

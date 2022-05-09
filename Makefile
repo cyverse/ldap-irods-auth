@@ -24,7 +24,7 @@ release: build
 	cp install/ldap-irods-auth.service release/install
 	cp install/README.md release/install
 	cp Makefile.release release/Makefile
-	cd release && tar zcvf ../ldap-irods-auth.tar.gz *
+	cd release && tar zcvf ../ldap_irods_auth.tar.gz *
 
 .PHONY: install_centos
 install_centos:
