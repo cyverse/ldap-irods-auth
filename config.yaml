@@ -3,6 +3,6 @@ service_port: 1389
 irods_host: "data.cyverse.org"
 irods_port: 1247
 irods_zone: "iplant"
-irods_user_group: "irodsldap"
+irods_user_group:
 auth_cache_timeout: 300
 ldap_base_dn: "dc=iplantcollaborative,dc=org"
